@@ -21,9 +21,16 @@ from parse import *
 
 @dp.message(CommandStart())
 async def start_command(message: Message):
+    global user_id
+    user_id = str(message.from_user.id)
+
     logger.info(f"User {user_id} started the bot")
 
-    await message.answer(HELLO_MESSAGE)
+    if user_id in whitelist:
+        await message.answer(HELLO_MESSAGE)
+
+    else:
+        await message.answer(NO_ACCESS)
 
 @dp.message(Command("parse"))
 async def parse_kwork(message: Message):
