@@ -11,7 +11,6 @@ from aiogram.types import *
 from aiogram.utils.markdown import *
 from loguru import *
 
-TOKEN = os.getenv("TOKEN")
 log_file = "logs/FTB.log"
 whitelist = ["1660218648"]
 config_file = 'config.json'
@@ -22,6 +21,8 @@ with open(config_file, 'r') as f:
 kwork_login = config['kwork_login']
 kwork_password = config['kwork_password']
 user_id = config['user_id']
+
+TOKEN = config['bot_token']
 
 categories = ['desktop_development', 'software']
 
