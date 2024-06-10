@@ -30,7 +30,7 @@
 	<img class="badge" src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=black&color=7dc4e4" style="border-radius: 5px;"/>
 </div>
 
-<h2 align="center">Installing<h2>
+<h2 align="center">Installing</h2>
 
 ```
 git clone https://github.com/Nighty3098/KWorkTGBot 
