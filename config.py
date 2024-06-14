@@ -11,29 +11,22 @@ from aiogram.types import *
 from aiogram.utils.markdown import *
 from loguru import *
 
-log_file = "logs/FTB.log"
-whitelist = ["1660218648"]
+
 config_file = 'config.json'
+
+KWORK_URL = 'https://kwork.ru/projects'
 
 with open(config_file, 'r') as f:
     config = json.load(f)
 
+log_file = config["log_file"]
+whitelist = config["whitelist"]
 kwork_login = config['kwork_login']
 kwork_password = config['kwork_password']
-user_id = config['user_id']
-
 TOKEN = config['bot_token']
+CATEGORIES = config['categories']
 
-categories = ['desktop_development', 'software']
-
-kwork_url = 'https://kwork.ru/api/v2/projects'
-
-kwork_headers = {
-    'Authorization': f'Basic {kwork_login}:{kwork_password}',
-    'Content-Type': 'application/json'
-}
-
-last_project_id = 0
+global user_id
 
 bot = Bot(TOKEN)
 dp = Dispatcher()
