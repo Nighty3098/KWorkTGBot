@@ -17,6 +17,6 @@ pydantic==2.7.3
 pydantic_core==2.18.4
 requests==2.32.3
 typing_extensions==4.12.2
-urllib3==2.2.1
+urllib3==2.2.2
 websockets==9.1
 yarl==1.9.4
