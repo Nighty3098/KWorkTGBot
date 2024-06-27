@@ -1,19 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
+from user_agent import generate_user_agent
 import lxml
 
 import time
 
+from get_proxy import *
 from config import *
-
-
-def getSoupWithWrite(url):
-    req = requests.get(url)
-    with open('index.html', 'wt', encoding='utf-8') as file:
-        file.write(req.text)
-    soup = BeautifulSoup(req.text, 'lxml')
-    return soup
-
 
 def get_last_call():
     with open('lastOrder.log', 'rt') as file:
@@ -21,20 +14,21 @@ def get_last_call():
     return last_call
 
 
-def getSoup(url):
-    req = requests.get(url)
-    soup = BeautifulSoup(req.text, 'lxml')
+def getSoup(url, proxy=None):
+    headers = {'User-Agent': generate_user_agent()}
+    if proxy:
+        proxies = {'http': proxy, 'https': proxy}
+        logger.debug(proxies)
+        
+        response = requests.get(url, headers=headers, proxies=proxies)
+    else:
+        response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    logger.debug(headers)
+    logger.debug(response)
+
     return soup
-
-
-def sendNotification(message):
-    url = "https://api.telegram.org/bot" + f'{token}'
-    method = url + "/sendMessage"
-
-    requests.post(method, data={
-        "chat_id": int(id),
-        "text": str(message)
-    })
 
 def parsKwork(user_id):
     logger.debug(f"Parsing categories")
@@ -42,23 +36,26 @@ def parsKwork(user_id):
         logger.debug(f"Parsing category: {category}")
         url = f'https://kwork.ru/projects?fc={category}'
         soup = getSoup(url)
-        find_all_table_with_order = soup.find_all(class_='card__content pb5')
+        logger.debug(soup)
+        find_all_table_with_order = soup.find_all(class_='want-card want-card--list want-card--hover')
         for item in find_all_table_with_order:
-            nameOrder = item.find(class_='wants-card__header-title first-letter breakwords pr250').find('a').get_text()
-            urlOrder = item.find(class_='wants-card__header-title first-letter breakwords pr250').find('a').get('href')
-            priceOrder = item.find(class_='wants-card__header-price wants-card__price m-hidden').get_text()
+            textOrder = item.find(class_='wants-card__header-title breakwords pr250').find('a').get_text()
+            urlOrder = item.find(class_='wants-card__header-title breakwords pr250').find('a').get('href')
+            priceOrder = item.find(class_='d-inline').get_text()
             priceNumber = int(priceOrder.replace('Desired budget: up to ', '').replace(' ', '').replace('₽', ''))
             if priceNumber <= int(price):
                 log = get_last_call()
-                if nameOrder not in log:
-                    text = f"""New project on kwork!\n\n{nameOrder}\n\nPrice: {priceOrder};\n\nLink: {urlOrder}
-                    """
+                if textOrder not in log:
+                    text = f"""New project on kwork!\n\n{textOrder}\n\nPrice: {priceOrder};"""
 
                     with open('lastOrder.log', 'a') as file:
-                        file.write(nameOrder + "\n")
+                        file.write(textOrder + "\n")
 
-                    bot.send_text(user_id, text)
+                    keyboard = types.InlineKeyboardMarkup()
+                    button = types.InlineKeyboardButton('Open project', url=urlOrder)
+                    keyboard.add(button)
 
+                    bot.send_text(user_id, text, reply_markup=keyboard)
 
 async def startKwork(user_id):
     logger.debug(f"{user_id}: Starting kwork parse")
